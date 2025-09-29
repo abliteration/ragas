@@ -1,16 +1,33 @@
 import datetime
 import os
 import subprocess
+import shutil
 
 
 def convert_ipynb_to_md(ipynb_file):
-    # Change this line to add an underscore
+    # Validate and sanitize the input filename
+    if not os.path.isfile(ipynb_file):
+        print(f"Error: File {ipynb_file} does not exist or is not a file.")
+        return
+
+    # Ensure the filename has a .ipynb extension
+    if not ipynb_file.endswith('.ipynb'):
+        print(f"Error: File {ipynb_file} is not a .ipynb file.")
+        return
+
     md_file = "_" + os.path.splitext(os.path.basename(ipynb_file))[0] + ".md"
     md_path = os.path.join(os.path.dirname(ipynb_file), md_file)
+
+    # Use absolute path for jupyter executable
+    jupyter_executable = shutil.which("jupyter")
+    if jupyter_executable is None:
+        print("Error: jupyter nbconvert not found. Please install it using 'pip install nbconvert'.")
+        return
+
     try:
         subprocess.run(
             [
-                "jupyter",
+                jupyter_executable,
                 "nbconvert",
                 "--to",
                 "markdown",
@@ -23,10 +40,6 @@ def convert_ipynb_to_md(ipynb_file):
         print(f"Converted {ipynb_file} to {md_path}")
     except subprocess.CalledProcessError as e:
         print(f"Error converting {ipynb_file}: {e}")
-    except FileNotFoundError:
-        print(
-            "Error: jupyter nbconvert not found. Please install it using 'pip install nbconvert'."
-        )
 
 
 def get_last_modified_time(file_path):
